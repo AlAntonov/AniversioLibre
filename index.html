@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aniversio Libre</title>
+    <style>
+		@import url('https://fonts.googleapis.com/css2?family=Lora:ital@0;1&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background: #2b2b3b;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #3a3a50;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #5a5a78;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            color: #e94560;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .controls label {
+            font-size: 0.85rem;
+            color: #a0a0c0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls input[type="range"] {
+            width: 90px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+
+        .font-size-label {
+            font-size: 0.85rem;
+            color: #a0a0c0;
+            min-width: 32px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            background: #5a5a78;
+            border: 1px solid #e94560;
+            color: #e0e0e0;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            width: 150px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-bar input::placeholder { color: #9090aa; }
+
+        .search-count {
+            font-size: 0.8rem;
+            color: #a0a0c0;
+            min-width: 60px;
+        }
+
+        .btn {
+            background: #5a5a78;
+            border: 1px solid #e94560;
+            color: #e0e0e0;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+        .btn:hover { background: #e94560; }
+
+        .progress-bar-wrap {
+            background: #5a5a78;
+            height: 3px;
+            position: sticky;
+            top: 57px;
+            z-index: 49;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #e94560;
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        #errorScreen {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            gap: 16px;
+            text-align: center;
+        }
+
+        #errorScreen h2 {
+            color: #e94560;
+            font-size: 1.4rem;
+        }
+
+        #errorScreen p {
+            color: #a0a0c0;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            max-width: 500px;
+        }
+
+        #errorScreen code {
+            background: #5a5a78;
+            color: #e0e0e0;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .spinner-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #5a5a78;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #readerScreen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .reader-content {
+            max-width: 780px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        .para-pair {
+            margin-bottom: 6px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .para-block {
+            padding: 13px 18px;
+            line-height: 1.85;
+            border-left: 3px solid transparent;
+            transition: background 0.15s;
+        }
+
+        .para-block.src-block {
+            background: #3a3a50;
+            color: #e0e0e0;
+        }
+
+        .para-block.trn-block {
+            background: #32324a;
+            color: #b0b8d0;
+        }
+
+        .para-pair:hover .src-block { background: #44445c; }
+        .para-pair:hover .trn-block { background: #3a3a54; }
+
+        .para-pair.active .para-block {
+            border-left-color: #e94560;
+        }
+
+        .para-pair.active .src-block { background: #424260; }
+        .para-pair.active .trn-block { background: #3c3c58; }
+
+        .para-pair.search-match .para-block {
+            border-left-color: #f0c040;
+        }
+
+        .para-pair.search-match.active .para-block {
+            border-left-color: #e94560;
+        }
+
+        mark {
+            background: rgba(255, 200, 0, 0.28);
+            color: inherit;
+            border-radius: 2px;
+        }
+
+        .status-bar {
+            background: #3a3a50;
+            border-top: 1px solid #5a5a78;
+            padding: 6px 20px;
+            font-size: 0.75rem;
+            color: #9090aa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 10px 14px; }
+            .reader-content { padding: 16px 10px 70px; }
+            .para-block { padding: 11px 12px; }
+            .search-bar input { width: 110px; }
+        }
+		body.light {
+		background: #f0f0f0;
+		color: #1a1a2e;
+	}
+	body.light header {
+		background: #ffffff;
+		border-bottom-color: #ccccdd;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+	}
+	body.light .progress-bar-wrap { background: #ccccdd; }
+	body.light .search-bar input {
+		background: #ffffff;
+		border-color: #e94560;
+		color: #1a1a2e;
+	}
+	body.light .search-bar input::placeholder { color: #aaaabb; }
+	body.light .btn {
+		background: #e8e8f0;
+		border-color: #e94560;
+		color: #1a1a2e;
+	}
+	body.light .btn:hover { background: #e94560; color: #fff; }
+	body.light .para-block.src-block {
+		background: #ffffff;
+		color: #1a1a2e;
+	}
+	body.light .para-block.trn-block {
+		background: #f5f5fa;
+		color: #555577;
+	}
+	body.light .para-pair:hover .src-block { background: #eaeaf5; }
+	body.light .para-pair:hover .trn-block { background: #e5e5f0; }
+	body.light .para-pair.active .src-block { background: #f2f2f8; }
+	body.light .para-pair.active .trn-block { background: #ededf5; }
+	body.light .para-pair.active .para-block { border-left-color: #e94560; }
+	body.light .para-pair.search-match .para-block { border-left-color: #e0a000; }
+	body.light .status-bar {
+		background: #ffffff;
+		border-top-color: #ccccdd;
+		color: #888899;
+	}
+	body.light #errorScreen code {
+		background: #e8e8f0;
+		color: #1a1a2e;
+	}
+	body.light .spinner { border-color: #ccccdd; border-top-color: #e94560; }
+	body.light .controls label { color: #555577; }
+	body.light .font-size-label { color: #555577; }
+	body.light .search-count { color: #555577; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Aniversio Libre</h1>
+    <div class="controls">
+        <div class="search-bar" id="searchBar" style="display:none">
+            <input type="text" id="searchInput" placeholder="Поиск… (Enter)">
+            <span class="search-count" id="searchCount"></span>
+        </div>
+        <label id="fontControl" style="display:none">
+            Шрифт:
+            <input type="range" id="fontSizeRange" min="12" max="26" value="17">
+            <span class="font-size-label" id="fontSizeLabel">16px</span>
+        </label>
+		<button class="btn" id="themeBtn">☀️ Светлая</button>
+    </div>
+</header>
+
+<div class="progress-bar-wrap" id="progressWrap" style="display:none">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="spinner-wrap" id="spinnerWrap">
+    <div class="spinner"></div>
+</div>
+
+<div id="errorScreen">
+    <div style="font-size:3rem">📂</div>
+    <h2>Не удалось загрузить файлы</h2>
+    <p>Файлы <code>src.txt</code> и <code>trn.txt</code> должны лежать рядом с этой страницей,
+       а страница должна быть открыта через веб-сервер.</p>
+    <p>Запустите в папке с файлами:</p>
+    <code>python -m http.server</code>
+    <p style="font-size:0.82rem; color:#9090aa; margin-top:8px;">
+        или используйте Live Server в VS Code
+    </p>
+</div>
+
+<div id="readerScreen">
+    <div class="reader-content" id="readerContent"></div>
+</div>
+
+<div class="status-bar" id="statusBar" style="display:none">
+    <span id="statusLeft"></span>
+    <span id="statusCenter"></span>
+    <span id="statusRight">0%</span>
+</div>
+
+<script>
+(() => {
+    const $ = id => document.getElementById(id);
+
+    let srcParas = [];
+    let trnParas = [];
+    let pairs = [];
+    let activeIndex = 0;
+    let searchMatches = [];
+    let searchIdx = 0;
+
+    async function fetchText(filename) {
+        const r = await fetch(filename);
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${filename}`);
+        return r.text();
+    }
+
+    function parseParagraphs(text) {
+        return text
+            .split(/\n\s*\n/)
+            .map(p => p.replace(/\r/g, '').trim())
+            .filter(p => p.length > 0);
+    }
+
+    async function init() {
+        try {
+            const [srcText, trnText] = await Promise.all([
+                fetchText('src.txt'),
+                fetchText('trn.txt')
+            ]);
+            srcParas = parseParagraphs(srcText);
+            trnParas = parseParagraphs(trnText);
+            showReader();
+        } catch (e) {
+            console.error(e);
+            $('spinnerWrap').style.display = 'none';
+            $('errorScreen').style.display = 'flex';
+        }
+    }
+
+    function showReader() {
+        $('spinnerWrap').style.display = 'none';
+
+        const rs = $('readerScreen');
+        rs.style.display = 'flex';
+        rs.style.flexDirection = 'column';
+
+        $('searchBar').style.display = 'flex';
+        $('fontControl').style.display = 'flex';
+        $('progressWrap').style.display = 'block';
+        $('statusBar').style.display = 'flex';
+
+        buildReader();
+    }
+
+    function escHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function buildReader() {
+        const content = $('readerContent');
+        content.innerHTML = '';
+        pairs = [];
+
+        const count = Math.max(srcParas.length, trnParas.length);
+
+        for (let i = 0; i < count; i++) {
+            const pair = document.createElement('div');
+            pair.className = 'para-pair';
+            pair.dataset.index = i;
+
+            const srcBlock = document.createElement('div');
+            srcBlock.className = 'para-block src-block';
+            srcBlock.innerHTML = `<span class="para-text">${escHtml(srcParas[i] || '')}</span>`;
+
+            const trnBlock = document.createElement('div');
+            trnBlock.className = 'para-block trn-block';
+            trnBlock.innerHTML = `<span class="para-text">${escHtml(trnParas[i] || '')}</span>`;
+
+            pair.appendChild(srcBlock);
+            pair.appendChild(trnBlock);
+            content.appendChild(pair);
+            pairs.push(pair);
+
+            pair.addEventListener('click', () => setActive(i, false));
+        }
+
+        $('statusLeft').textContent = `Абзацев: ${count}`;
+        applyFontSize($('fontSizeRange').value);
+        setActive(0, false);
+
+        window.addEventListener('scroll', onWindowScroll, { passive: true });
+    }
+
+    function setActive(index, scroll) {
+        if (pairs[activeIndex]) pairs[activeIndex].classList.remove('active');
+        activeIndex = Math.max(0, Math.min(index, pairs.length - 1));
+        if (pairs[activeIndex]) {
+            pairs[activeIndex].classList.add('active');
+            if (scroll) pairs[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        $('statusCenter').textContent = `${activeIndex + 1} / ${pairs.length}`;
+    }
+
+    function onWindowScroll() {
+        const scrolled = window.scrollY;
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = total > 0 ? scrolled / total * 100 : 0;
+        $('progressBar').style.width = pct.toFixed(1) + '%';
+        $('statusRight').textContent = `${pct.toFixed(0)}%`;
+
+        const midY = window.innerHeight / 2;
+        let closest = activeIndex, closestDist = Infinity;
+        pairs.forEach((p, i) => {
+            const rect = p.getBoundingClientRect();
+            const dist = Math.abs(rect.top + rect.height / 2 - midY);
+            if (dist < closestDist) { closestDist = dist; closest = i; }
+        });
+        if (closest !== activeIndex) {
+            if (pairs[activeIndex]) pairs[activeIndex].classList.remove('active');
+            activeIndex = closest;
+            if (pairs[activeIndex]) pairs[activeIndex].classList.add('active');
+            $('statusCenter').textContent = `${activeIndex + 1} / ${pairs.length}`;
+        }
+    }
+
+    function applyFontSize(size) {
+        $('readerContent').style.fontSize = size + 'px';
+        $('fontSizeLabel').textContent = size + 'px';
+    }
+    $('fontSizeRange').addEventListener('input', e => applyFontSize(e.target.value));
+
+    function clearSearch() {
+        pairs.forEach((p, i) => {
+            p.classList.remove('search-match');
+            const st = p.querySelector('.src-block .para-text');
+            const tt = p.querySelector('.trn-block .para-text');
+            if (st) st.innerHTML = escHtml(srcParas[i] || '');
+            if (tt) tt.innerHTML = escHtml(trnParas[i] || '');
+        });
+        searchMatches = [];
+        $('searchCount').textContent = '';
+    }
+
+    function highlightText(text, query) {
+        if (!query) return escHtml(text);
+        const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        const parts = [];
+        let last = 0, m;
+        while ((m = re.exec(text)) !== null) {
+            parts.push(escHtml(text.slice(last, m.index)));
+            parts.push(`<mark>${escHtml(m[0])}</mark>`);
+            last = m.index + m[0].length;
+        }
+        parts.push(escHtml(text.slice(last)));
+        return parts.join('');
+    }
+
+    function doSearch(query) {
+        clearSearch();
+        const q = query.trim();
+        if (!q) return;
+
+        const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+        pairs.forEach((p, i) => {
+            const s = srcParas[i] || '';
+            const t = trnParas[i] || '';
+            re.lastIndex = 0; const inSrc = re.test(s);
+            re.lastIndex = 0; const inTrn = re.test(t);
+
+            if (inSrc || inTrn) {
+                p.classList.add('search-match');
+                searchMatches.push(i);
+                const st = p.querySelector('.src-block .para-text');
+                const tt = p.querySelector('.trn-block .para-text');
+                if (st) st.innerHTML = highlightText(s, q);
+                if (tt) tt.innerHTML = highlightText(t, q);
+            }
+        });
+
+        if (searchMatches.length > 0) {
+            searchIdx = 0;
+            jumpToMatch(0);
+        } else {
+            $('searchCount').textContent = 'Не найдено';
+        }
+    }
+
+    function jumpToMatch(dir) {
+        if (!searchMatches.length) return;
+        searchIdx = (searchIdx + dir + searchMatches.length) % searchMatches.length;
+        setActive(searchMatches[searchIdx], true);
+        $('searchCount').textContent = `${searchIdx + 1} / ${searchMatches.length}`;
+    }
+
+    let searchTimer;
+    $('searchInput').addEventListener('input', e => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => doSearch(e.target.value), 300);
+    });
+
+    $('searchInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchMatches.length ? jumpToMatch(e.shiftKey ? -1 : 1) : doSearch($('searchInput').value);
+        }
+        if (e.key === 'Escape') { $('searchInput').value = ''; clearSearch(); }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.target === $('searchInput')) return;
+        if ((e.key === 'ArrowDown' || e.key === 'j') && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault(); setActive(activeIndex + 1, true);
+        }
+        if ((e.key === 'ArrowUp' || e.key === 'k') && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault(); setActive(activeIndex - 1, true);
+        }
+        if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault(); $('searchInput').focus();
+        }
+    });
+	
+	const themeBtn = $('themeBtn');
+	const saved = localStorage.getItem('theme');
+	if (saved === 'light') { document.body.classList.add('light'); themeBtn.textContent = '🌙 Тёмная'; }
+
+	themeBtn.addEventListener('click', () => {
+		const isLight = document.body.classList.toggle('light');
+		themeBtn.textContent = isLight ? '🌙 Тёмная' : '☀️ Светлая';
+		localStorage.setItem('theme', isLight ? 'light' : 'dark');
+	});
+
+    init();
+
+})();
+</script>
+</body>
+</html>
