@@ -1,3 +1,9 @@
+> 🌐 Jump to: [English](#-english) | [Русский](#-русский)
+
+---
+
+## 🇬🇧 English
+
 # Aniversio Libre
 
 > A minimalist parallel-text reader for the browser. Place your source and translation side by side — paragraph by paragraph.
@@ -96,7 +102,7 @@ Apache 2.0
 
 ---
 
----
+## 🇷🇺 Русский
 
 # Aniversio Libre
 
