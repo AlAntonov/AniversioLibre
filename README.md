@@ -2,9 +2,7 @@
 
 ---
 
-## English
-
----
+## 🇬🇧 English
 
 # Aniversio Libre
 
@@ -104,9 +102,9 @@ Apache 2.0
 
 ---
 
-## Русский
-
 ---
+
+## 🇷🇺 Русский
 
 # Aniversio Libre
 
